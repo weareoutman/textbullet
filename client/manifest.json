@@ -1,0 +1,35 @@
+{
+  "manifest_version": 2,
+
+  "name": "TextBullet",
+  "description": "Text bullets on the web",
+  "version": "0.0.1",
+
+  "permissions": [
+    "*://*/"
+  ],
+
+  "background": {
+    "page": "background.html"
+  },
+
+  "browser_action": {
+    "default_icon": "icons/icon.png",
+    "default_title": "TextBullet !",
+    "default_popup": "popup.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "js/jquery.js",
+        "js/keymaster.js",
+        "js/content.js"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "TextBullet",
+  "description": "Text bullets on the web",
+  "version": "0.0.1",
+  "author": "Wang Shenwei",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "websocket": "~1.0.8"
+  }
+}
