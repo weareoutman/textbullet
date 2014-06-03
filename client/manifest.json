@@ -5,6 +5,10 @@
   "description": "Text bullets on the web",
   "version": "0.0.1",
 
+  "icons": {
+    "128": "icons/icon.png"
+  },
+
   "permissions": [
     "*://*/"
   ],

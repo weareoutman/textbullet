@@ -1,3 +1,5 @@
+var bg = chrome.extension.getBackgroundPage();
+
 var inputChannels = $('#input-channels'),
 	buttonDone = $('#button-done'),
 	radioOn = $('#radio-on'),
@@ -14,15 +16,13 @@ inputChannels.on('keyup', function(e){
 	}
 });
 
-(storage.local.getItem('turn') === 'on' ? radioOn : radioOff).prop('checked', true);
+(storage.local.getItem('turn') === 'on' && bg.activated() ? radioOn : radioOff).prop('checked', true);
 
 radioOn.on('click', onturn);
 radioOff.on('click', onturn);
 
 buttonPrompt.on('click', function(){
-	sendMessage({
-		action: 'prompt'
-	});
+	bg.toPrompt();
 	window.close();
 });
 
@@ -34,27 +34,17 @@ function setChannels() {
 	storage.local.setItem('channels', newChannels);
 	if (channels !== inputChannels.val()) {
 		channels = inputChannels.val();
-		sendMessage({
-			action: 'channels'
-		});
+		bg.setChannels();
 	}
 	window.close();
 }
 
 function onturn() {
-	if (this.checked) {
-		setTurn(this.value);
+	storage.local.setItem('turn', this.value);
+	if (this.value === 'on') {
+		bg.turnOn();
+	} else {
+		bg.turnOff();
 	}
-}
-
-function setTurn(on) {
-	storage.local.setItem('turn', on);
-	sendMessage({
-		action: on === 'on' ? 'connect' : 'close'
-	});
 	window.close();
-}
-
-function sendMessage(data) {
-	chrome.runtime.sendMessage(data);
 }
