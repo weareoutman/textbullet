@@ -89,7 +89,7 @@ function toPrompt() {
 
 function setIcon(icon) {
 	chrome.browserAction.setIcon({
-		path: 'icons/' + icon + '.jpg'
+		path: 'icons/' + icon + '.svg'
 	});
 }
 

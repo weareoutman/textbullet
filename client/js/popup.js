@@ -23,6 +23,7 @@ buttonPrompt.on('click', function(){
 	sendMessage({
 		action: 'prompt'
 	});
+	window.close();
 });
 
 function setChannels() {

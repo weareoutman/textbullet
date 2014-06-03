@@ -100,7 +100,7 @@ function stats(req, res) {
 
 function switchChannels(oldChannels, newChannels) {
 	oldChannels.forEach(function(name){
-		var	index = -1;
+		var index = -1;
 		channelList.some(function(item, i){
 			var match = item.name === name;
 			if (match) {
@@ -118,7 +118,7 @@ function switchChannels(oldChannels, newChannels) {
 		}
 	});
 	newChannels.forEach(function(name){
-		var	index = -1;
+		var index = -1;
 		channelList.some(function(item, i){
 			var match = item.name === name;
 			if (match) {
