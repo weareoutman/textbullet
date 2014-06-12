@@ -64,14 +64,16 @@
 	
 	key('command+b, ctrl+b', function(e){
 		chrome.runtime.sendMessage({
-			action: 'prompt'
+			type: 'prompt'
 		});
 		return false;
 	});
 
-	chrome.runtime.onMessage.addListener(function(request, sender){
-		if (request.action === 'bullet') {
-			new Bullet(request.data);
+	chrome.runtime.onMessage.addListener(function(data, sender){
+		switch (data.type) {
+			case 'bullet':
+				new Bullet(data);
+				break;
 		}
 	});
 })();

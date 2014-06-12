@@ -4,7 +4,8 @@ var HOST = '127.0.0.1',
 	DELAY = 500;
 
 var socket,
-	activeInfo,
+	activeMap = {},
+	activeWindowId,
 	promptAfterConnected = false,
 	delaying = false,
 	retries = RETRIES,
@@ -52,11 +53,15 @@ function onopen() {
 function onmessage(e) {
 	log('Received', e.data);
 	var data = JSON.parse(e.data);
-	if (activeInfo) {
-		chrome.tabs.sendMessage(activeInfo.tabId, {
-			action: 'bullet',
-			data: data
-		});
+	switch (data.type) {
+		case 'bullet':
+			if (activeMap[activeWindowId]) {
+				chrome.tabs.sendMessage(activeMap[activeWindowId], data);
+			}
+			break;
+		case 'stats':
+			chrome.runtime.sendMessage(data);
+			break;
 	}
 }
 
@@ -94,7 +99,7 @@ function toPrompt() {
 		promptAfterConnected = true;
 		return connect();
 	}
-	var text = prompt('send text', '#TextBullet ');
+	var text = prompt('输入消息', '#TextBullet ');
 	if (text) {
 		text = text.trim();
 		var data = {
@@ -107,6 +112,18 @@ function toPrompt() {
 function setIcon(icon) {
 	chrome.browserAction.setIcon({
 		path: 'icons/' + icon + '.svg'
+	});
+	var title = 'TextBullet !';
+	switch (icon) {
+		case 'connecting':
+			title = '连接中';
+			break;
+		case 'closed':
+			title = '连接失败';
+			break;
+	}
+	chrome.browserAction.setTitle({
+		title: title
 	});
 }
 
@@ -139,12 +156,27 @@ function turnOn() {
 	}
 }
 
-chrome.tabs.onActivated.addListener(function(active) {
-	activeInfo = active;
+chrome.tabs.onActivated.addListener(function(info) {
+	log('onActivated', info);
+	activeMap[info.windowId] = info.tabId;
+	if (! activeWindowId) {
+		activeWindowId = info.windowId;
+	}
+});
+chrome.windows.onFocusChanged.addListener(function(windowId) {
+	log('onFocusChanged', windowId);
+	activeWindowId = windowId;
+});
+chrome.windows.onRemoved.addListener(function(windowId) {
+	log('onRemoved', windowId);
+	if (activeMap[windowId]) {
+		delete activeMap[windowId];
+	}
 });
 
-chrome.runtime.onMessage.addListener(function(request, sender){
-	switch (request.action) {
+chrome.runtime.onMessage.addListener(function(data, sender){
+	console.log('runtime.onMessage', data);
+	switch (data.type) {
 		case 'prompt':
 			toPrompt();
 			break;

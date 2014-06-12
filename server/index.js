@@ -47,7 +47,7 @@ function onrequest(req) {
 				return;
 			}
 			if (typeof data.text === 'string') {
-				broadcast(data.text, socket);
+				bullet(data.text, socket);
 			} else if (Array.isArray(data.channels)) {
 				var oldChannels = socket.channels || [];
 				var newChannels = socket.channels = data.channels.slice(0, 3);
@@ -63,13 +63,14 @@ function onclose(socket) {
 	connections.splice(connections.indexOf(socket), 1);
 }
 
-function broadcast(text, source) {
+function bullet(text, source) {
 	var data = {
+		type: 'bullet',
 		text: text.substr(0, 40),
 		remote: source.remoteAddress
 	};
 	var msg = JSON.stringify(data);
-	log('Broadcasting', msg);
+	log('Bulleting', msg);
 	connections.forEach(function(target) {
 		var match,
 			src = source.channels || [],
@@ -87,8 +88,21 @@ function broadcast(text, source) {
 	});
 }
 
+function broadcast() {
+	var msg = JSON.stringify({
+		type: 'stats',
+		connections: connections.length,
+		channels: channelList
+	});
+	log('Broadcast', msg);
+	connections.forEach(function(target){
+		target.send(msg);
+	});
+}
+
 // Routers
 function stats(req, res) {
+	log('stats');
 	var data = {
 		connections: connections.length,
 		channels: channelList
@@ -99,7 +113,13 @@ function stats(req, res) {
 }
 
 function switchChannels(oldChannels, newChannels) {
-	oldChannels.forEach(function(name){
+	var exits = oldChannels.filter(function(name){
+		return newChannels.indexOf(name) === -1;
+	});
+	var enters = newChannels.filter(function(name){
+		return oldChannels.indexOf(name) === -1;
+	});
+	exits.forEach(function(name){
 		var index = -1;
 		channelList.some(function(item, i){
 			var match = item.name === name;
@@ -117,7 +137,7 @@ function switchChannels(oldChannels, newChannels) {
 			}
 		}
 	});
-	newChannels.forEach(function(name){
+	enters.forEach(function(name){
 		var index = -1;
 		channelList.some(function(item, i){
 			var match = item.name === name;
@@ -135,4 +155,7 @@ function switchChannels(oldChannels, newChannels) {
 			});
 		}
 	});
+	if (enters.length > 0 || exits.length > 0) {
+		broadcast();
+	}
 }

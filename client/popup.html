@@ -1,21 +1,33 @@
 <!doctype html>
 <html>
 <head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/normalize.css">
+<link rel="stylesheet" href="css/selectize.css">
+<link rel="stylesheet" href="css/popup.css">
 </head>
 <body>
-<input id="input-channels" placeholder="频道" autofocus="autofocus">
-<button id="button-done">确定</button>
+<div>
+	<label for="input-channels">频道：</label>
+	<input id="input-channels" placeholder="选择或创建频道" style="display:block;width:100%;">
+</div>
+<!-- <button id="button-done">确定</button> -->
+<!-- <br> -->
 <br>
-<label for="radio-on">
-	<input type="radio" name="turn" id="radio-on" value="on"> 开
-</label>
-<label for="radio-off">
-	<input type="radio" name="turn" id="radio-off" value="off"> 关
-</label>
+<div class="switch">
+	<div class="board">
+		<div class="on">开</div>
+		<div class="off">关</div>
+		<div class="button">
+			<div class="coat"></div>
+		</div>
+	</div>
+</div>
 <br>
 <button id="button-prompt">发送</button>
 <script src="js/jquery.js"></script>
+<script src="js/selectize.js"></script>
 <script src="js/storage.js"></script>
-<script src="js/popup.js"></script>
+<script src="js/popup.js" charset="utf-8"></script>
 </body>
 </html>
