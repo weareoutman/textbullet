@@ -11,12 +11,8 @@ var socket,
 	retries = RETRIES,
 	retryTimer;
 
-function log() {
-	console.log.apply(console, arguments);
-}
-
 function connect() {
-	log('Connecting');
+	log.info('Connecting');
 	delaying = false;
 	socket = new WebSocket('ws://' + HOST + ':' + PORT + '/');
 	socket.onopen = onopen;
@@ -39,7 +35,7 @@ function activated() {
 }
 
 function onopen() {
-	log('Connected');
+	log.info('Connected');
 	retries = RETRIES;
 	setIcon('connected');
 	// setPopup('popup.html');
@@ -51,7 +47,7 @@ function onopen() {
 }
 
 function onmessage(e) {
-	log('Received', e.data);
+	log.info('Received', e.data);
 	var data = JSON.parse(e.data);
 	switch (data.type) {
 		case 'bullet':
@@ -66,27 +62,27 @@ function onmessage(e) {
 }
 
 function onclose(e) {
-	log('Failed to connect with', e.reason, e.code);
+	log.warn('Failed to connect with', e.reason, e.code);
 	// setPopup('');
 	retries -= 1;
 	if (retries < 1) {
 		onerror();
 	} else {
 		var delay = (RETRIES - retries) * DELAY;
-		log('Reconnecting in', delay);
+		log.info('Reconnecting in', delay);
 		delaying = true;
 		retryTimer = setTimeout(connect, delay);
 	}
 }
 
 function onerror() {
-	log('Connect error');
+	log.error('Connect error');
 	setIcon(storage.local.getItem('turn') === 'on' ? 'closed' : 'normal');
 	promptAfterConnected = false;
 }
 
 function send(data) {
-	log('Sending', data);
+	log.info('Sending', data);
 	return socket.send(JSON.stringify(data));
 }
 
@@ -157,25 +153,25 @@ function turnOn() {
 }
 
 chrome.tabs.onActivated.addListener(function(info) {
-	log('onActivated', info);
+	log.info('onActivated', info);
 	activeMap[info.windowId] = info.tabId;
 	if (! activeWindowId) {
 		activeWindowId = info.windowId;
 	}
 });
 chrome.windows.onFocusChanged.addListener(function(windowId) {
-	log('onFocusChanged', windowId);
+	log.info('onFocusChanged', windowId);
 	activeWindowId = windowId;
 });
 chrome.windows.onRemoved.addListener(function(windowId) {
-	log('onRemoved', windowId);
+	log.info('onRemoved', windowId);
 	if (activeMap[windowId]) {
 		delete activeMap[windowId];
 	}
 });
 
 chrome.runtime.onMessage.addListener(function(data, sender){
-	console.log('runtime.onMessage', data);
+	log.info('runtime.onMessage', data);
 	switch (data.type) {
 		case 'prompt':
 			toPrompt();

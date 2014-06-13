@@ -1,23 +1,17 @@
+// Background Page
 var bg = chrome.extension.getBackgroundPage();
 
-/*var inputChannels = $('#input-channels'),
-	buttonDone = $('#button-done'),
-	buttonPrompt = $('#button-prompt');
+// requestAnimationFrame
+var nextFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
 
-var channels = (storage.local.getItem('channels') || []).join(',');
-inputChannels.val(channels);
-
-buttonDone.on('click', setChannels);
-inputChannels.on('keyup', function(e){
-	if (e.keyCode === 13) {
-		setChannels();
-	}
-});*/
-
+// Channels input
 var inputChannels = $('#input-channels');
+
+// Default empty channel
 var _channels = (storage.local.getItem('channels') || []).join(',');
 inputChannels.val(_channels);
 
+// Switch button
 var swt = $('.switch').click(function(){
 	var turn = swt.hasClass('closed') ? 'on' : 'off';
 	storage.local.setItem('turn', turn);
@@ -28,35 +22,28 @@ var swt = $('.switch').click(function(){
 		bg.turnOff();
 		swt.addClass('closed');
 	}
-	// window.close();
+	// TODO: toggle
 });
 
+// Turned on
 if (!(storage.local.getItem('turn') === 'on' && bg.activated())) {
 	swt.addClass('closed');
 }
-setTimeout(function(){
-	swt.addClass('easing');
-}, 1);
 
-/*buttonPrompt.on('click', function(){
-	bg.toPrompt();
-	window.close();
-});*/
+// Easing swt at next frame
+nextFrame(function(){
+	swt.addClass('easing');
+});
 
 function setChannels() {
-	var newChannels = inputChannels.val().split(/[,|，]/).map(function(channel){
-		return channel.trim().substr(0, 20);
-	}).slice(0, 3);
-	newChannels = newChannels.filter(function(channel){
-		return channel !== '';
-	});
-	inputChannels.val(newChannels.join(','));
+	var string = inputChannels.val(),
+		newChannels = string.split(',');
 	storage.local.setItem('channels', newChannels);
-	if (_channels !== inputChannels.val()) {
-		_channels = inputChannels.val();
+	if (_channels !== string) {
+		_channels = string;
 		bg.sendChannels();
 	}
-	window.close();
+	// window.close();
 }
 
 var channels,
@@ -70,9 +57,10 @@ function fetch() {
 		if (d) {
 			channels = d.channels;
 			connections = d.connections;
+			// TODO: tell stats
 		}
 	}).fail(function(xhr, reason){
-		console.log('fetch failed', reason);
+		log.error('fetch failed', reason);
 	}).always(function(){
 		// setTimeout(fetch, 5e3);
 	});
@@ -92,7 +80,7 @@ function build() {
 		persist: false,
 		create: function(input){
 			return {
-				name: input,
+				name: cut(input),
 				count: 1
 			};
 		},
@@ -101,7 +89,7 @@ function build() {
 				return '<div class="option"><span class="name">' + escape(data.name) + '</span> <span class="count">(' + data.count + '人)</span></div>';
 			},
 			option_create: function(data, escape){
-				return '<div class="create">创建频道: <strong>' + escape(data.input) + '</strong>&hellip;</div>';
+				return '<div class="create">创建频道: <strong>' + escape(cut(data.input)) + '</strong>&hellip;</div>';
 			}
 		},
 	});
@@ -109,12 +97,17 @@ function build() {
 	selectize.focus();
 }
 
+// Trim and cut input to 20 chars
+function cut(input) {
+	return input.trim().substr(0, 20);
+}
+
 inputChannels.change(function(){
-	console.log('changed', inputChannels.val());
+	log.info('channels changed', inputChannels.val());
 });
 
 chrome.runtime.onMessage.addListener(function(data, sender){
-	console.log('runtime.onMessage', data);
+	log.info('runtime.onMessage', data);
 	switch (data.type) {
 		case 'stats':
 			channels = data.channels;
